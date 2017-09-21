@@ -1,14 +1,10 @@
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
+// Justin Terry
+// Class (CECS 274-05)
+// Project Name (Prog 2 - Blackjack)
+// Due Date ()
+
 import java.util.ArrayList;
 import java.util.Collections;
-
-import javax.imageio.ImageIO;
-
-import com.sun.glass.ui.View;
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -64,49 +60,53 @@ public class BlackJackGui extends Application {
 
 	@Override
 	public void start(Stage mainStage) throws Exception {
+		// Creating and formatting stage
 		mainStage.setTitle("Blackjack!");
 		mainStage.setMaxHeight(600);
 		mainStage.setMaxWidth(800);
 		mainStage.setMinHeight(600);
 		mainStage.setMaxWidth(800);
-		
+
+		// Adding BorderPane layout
 		BorderPane bP = new BorderPane();
 		Scene mainScene = new Scene(bP, 800, 600);
 
+		// Formatting message label
 		message.setTextFill(Color.WHITE);
 		message.setTextAlignment(TextAlignment.CENTER);
-		
+
+		// Adding and formatting buttons
 		newDeckButton.setPrefSize(100, 25);
-		
 		shuffleButton.setPrefSize(100, 25);
 		shuffleButton.setDisable(true);
-		
 		displayButton.setPrefSize(100, 25);
 		displayButton.setDisable(true);
-		
 		playButton.setPrefSize(100, 25);
 		playButton.setDisable(true);
-		
 		exitButton.setPrefSize(100, 25);
-		
+
+		// Adding boxes for ease of placing cards on screen
 		playerBox.setSpacing(10);
 		dealerBox.setSpacing(10);
 
+		// Adding and formatting footer box
 		footer.setMaxSize(800, 25);
 		footer.getChildren().add(message);
 		footer.setAlignment(Pos.CENTER);
 		footer.setMinWidth(800);
 
+		// Creating buttonsBar and adding all the buttons to it
 		buttonsBar.setStyle("-fx-background-color: #ECECEC;");
 		buttonsBar.setPrefHeight(35);
 		buttonsBar.setSpacing(50);
 		buttonsBar.setPadding(new Insets(5, 5, 5, 50));
 		buttonsBar.getChildren().addAll(newDeckButton, shuffleButton, displayButton, playButton, exitButton);
 
+		// Formatting panes
 		leftBar.setPrefWidth(250);
-
 		center.setMinWidth(550);
 
+		// Adding HBoxes to borderPane and setting the background
 		bP.setCenter(center);
 		bP.setTop(buttonsBar);
 		bP.setBottom(footer);
@@ -114,7 +114,7 @@ public class BlackJackGui extends Application {
 				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
 		bP.setPrefSize(800, 600);
 
-		// Add initial Blackjack Image
+		// Add initial Blackjack Image if the game hasn't been played yet
 		ImageView firstIV = new ImageView(new Image("drawables/blackjack.png"));
 		center.setAlignment(Pos.CENTER);
 		center.getChildren().add(firstIV);
@@ -124,10 +124,12 @@ public class BlackJackGui extends Application {
 
 			@Override
 			public void handle(ActionEvent arg0) {
-				center.getChildren().remove(firstIV);
-				bP.setLeft(leftBar);
-				message.setText("A new deck has been created");
-
+				/*
+				 * This while and for loop work by assigning 4 cards the same value (counter)
+				 * then clicking up one value and assigning that value to the next four cards.
+				 * These numbers are then used to assign value and and image to the card in its
+				 * constructor.
+				 */
 				int counter = 2;
 				while (counter < 15) {
 					for (int i = 0; i < 4; i++) {
@@ -135,9 +137,15 @@ public class BlackJackGui extends Application {
 					}
 					counter++;
 				}
+
+				// Disabling buttons and telling the user the deck has been created
 				newDeckButton.setDisable(true);
 				shuffleButton.setDisable(false);
 				displayButton.setDisable(false);
+				message.setText("A new deck has been created");
+
+				// Clears center
+				center.getChildren().remove(firstIV);
 			}
 
 		});
@@ -146,11 +154,11 @@ public class BlackJackGui extends Application {
 
 			@Override
 			public void handle(ActionEvent arg0) {
+				// Empties scene
 				center.getChildren().clear();
+				// Shuffles theDeck
 				Collections.shuffle(theDeck);
-				for (int i = 0; i < 52; i++) {
-					System.out.println(theDeck.get(i).getValue());
-				}
+				// Tells the user theDeck is shuffled and enables the play button
 				message.setText("The deck has been shuffled");
 				playButton.setDisable(false);
 			}
@@ -161,11 +169,13 @@ public class BlackJackGui extends Application {
 
 			@Override
 			public void handle(ActionEvent arg0) {
+				// Preparing scene
 				center.getChildren().clear();
 				leftBar.getChildren().clear();
 				playerBox.getChildren().clear();
 				dealerBox.getChildren().clear();
 				decision.setText("");
+				bP.setLeft(leftBar);
 
 				// Labels
 				Label stashLabel = new Label("You have " + stash + " credits");
@@ -210,7 +220,7 @@ public class BlackJackGui extends Application {
 						}
 					}
 				});
-// --------------------------------- Bet Buttons ---------------------------------------------
+				// Bet Buttons
 				betFive.setOnAction(new EventHandler<ActionEvent>() {
 
 					@Override
@@ -244,7 +254,7 @@ public class BlackJackGui extends Application {
 						message.setText("Click Deal to continue");
 					}
 				});
-// ---------------------------------End Bet Buttons ------------------------------------------
+				// ---------------------------------End Bet Buttons
 
 			}
 
@@ -262,7 +272,7 @@ public class BlackJackGui extends Application {
 					if (playersHand.getScore() > 21) {
 						gameOver();
 					}
-				}else {
+				} else {
 					decision.setText("Out of cards");
 					newDeckButton.setDisable(false);
 				}
@@ -277,12 +287,12 @@ public class BlackJackGui extends Application {
 				// Hits the dealer's hand until the dealer is above 17
 				while (true) {
 					if (dealerHand.getScore() < 17) {
-						if(theDeck.size() >= 1) {
-						dealerHand.addCard(theDeck.get(0));
-						dealerBox.getChildren().add(theDeck.get(0).getImg());
-						theDeck.remove(0);
-						System.out.println("Dealer: " + dealerHand.getScore());
-						}else {
+						if (theDeck.size() >= 1) {
+							dealerHand.addCard(theDeck.get(0));
+							dealerBox.getChildren().add(theDeck.get(0).getImg());
+							theDeck.remove(0);
+							System.out.println("Dealer: " + dealerHand.getScore());
+						} else {
 							decision.setText("Out of cards");
 							newDeckButton.setDisable(false);
 							break;
@@ -291,7 +301,7 @@ public class BlackJackGui extends Application {
 						break;
 					}
 				}
-
+				// Runs gameOver() to end the game.
 				gameOver();
 			}
 		});
@@ -301,17 +311,19 @@ public class BlackJackGui extends Application {
 
 			@Override
 			public void handle(ActionEvent arg0) {
+				// Adds a FlowPane to the scene to enable wrapping
 				FlowPane flow = new FlowPane();
 				flow.setPadding(new Insets(12));
 				flow.setVgap(3);
 				flow.setPrefWrapLength(550);
 				flow.setHgap(-50);
-				playButton.setDisable(false);
-
+				
+				// Preparing scene
 				center.getChildren().clear();
 				leftBar.getChildren().clear();
 				center.getChildren().add(flow);
-
+				
+				// Displays all the cards in the deck
 				for (int i = 0; i < theDeck.size(); i++) {
 					flow.getChildren().add(theDeck.get(i).getImg());
 				}
@@ -339,21 +351,23 @@ public class BlackJackGui extends Application {
 
 	public void deal() {
 		if (theDeck.size() >= 4) {
+
+			// Preparing scene for new layout
 			center.getChildren().clear();
-			message.setText("Good Luck!");
+			decision.setText("");
+			message.setText("");
 			playButton.setDisable(true);
 			shuffleButton.setDisable(true);
-			decision.setText("");
 			hitButton.setDisable(false);
 			stayButton.setDisable(false);
 			betFive.setDisable(true);
 			betTen.setDisable(true);
 			betTwentyFive.setDisable(true);
-			message.setText("");
 
+			// Adding BorderPane to center box and then assigning HBoxes to
+			// sections of the BorderPane.
 			BorderPane playingPane = new BorderPane();
 			center.getChildren().add(playingPane);
-
 			playerBox.setAlignment(Pos.CENTER);
 			dealerBox.setAlignment(Pos.CENTER);
 			playerBox.setMinSize(550, 260);
@@ -364,19 +378,30 @@ public class BlackJackGui extends Application {
 			playingPane.setTop(dealerBox);
 			playingPane.setBottom(playerBox);
 
+			/*
+			 * This for loop deals the cards to the user and dealer. The first and third
+			 * card are given to the user and the second and forth a dealt to the dealer's
+			 * hand. The cards that are dealt have their image added to the stage and then
+			 * they are removed from theDeck. The image of the second card the dealer is
+			 * dealt is not added, instead an image of the back of a card is added. The else
+			 * statement catches if the deck is empty.
+			 */
 			for (int i = 0; i < 4; i++) {
 				if (i == 0 || i == 2) {
 					playersHand.addCard(theDeck.get(0));
 					playerBox.getChildren().add(theDeck.get(0).getImg());
 					theDeck.remove(0);
+				} else if (i == 1) {
+					dealerHand.addCard(theDeck.get(0));
+					dealerBox.getChildren().add(dealerHand.cards.get(0).getImg());
+					theDeck.remove(0);
 				} else {
 					dealerHand.addCard(theDeck.get(0));
 					theDeck.remove(0);
+					back = new Card(new Image("drawables/Playing Cards/back.png"));
+					dealerBox.getChildren().add(back.getImg());
 				}
 			}
-			dealerBox.getChildren().add(dealerHand.cards.get(0).getImg());
-			back = new Card(new Image("drawables/Playing Cards/back.png"));
-			dealerBox.getChildren().add(back.getImg());
 		} else {
 			message.setText("No more cards available.");
 			newDeckButton.setDisable(false);
@@ -384,6 +409,7 @@ public class BlackJackGui extends Application {
 
 	}
 
+	// bet() handles the betting by adding and subtracting credits as necessary
 	public void bet(int num) {
 		if (stash >= num) {
 			stash = stash - num;
@@ -394,55 +420,76 @@ public class BlackJackGui extends Application {
 		}
 	}
 
+	/*
+	 * gameOver() handles determining the outcome of the game. Then the hand scores
+	 * are compared, a winner is declared, and the pot is paid to the player if they
+	 * win.
+	 */
 	public void gameOver() {
+		// Preparing scene for winner declaration
 		decision.setTextFill(Color.WHITE);
-		messageBox.getChildren().clear();
 		messageBox.getChildren().add(decision);
+		// Disabling buttons that should not be clicked
 		hitButton.setDisable(true);
 		stayButton.setDisable(true);
 		betFive.setDisable(true);
 		betTen.setDisable(true);
 		betTwentyFive.setDisable(true);
 
+		// Console output for error checking
 		System.out.println("D Before: " + dealerHand.getScore());
 		System.out.println("P before: " + playersHand.getScore());
 
+		/*
+		 * Collection of if/else if/else statements determines the winner then alerts
+		 * the player to the winner by updating decision and then adds the pot to the
+		 * players stash when necessary.
+		 */
 		if (dealerHand.getScore() > 21) {
 			decision.setText("Dealer busts, you win!");
 			stash = stash + pot;
-			System.out.println("DBYW");
 		} else if (playersHand.getScore() > 21) {
 			decision.setText("You busted, dealer wins.");
-			System.out.println("YBDW");
 		} else if (playersHand.getScore() > dealerHand.getScore()) {
 			decision.setText("You win!");
 			stash = stash + pot;
-			System.out.println("YW");
 		} else if (playersHand.getScore() == dealerHand.getScore()) {
 			decision.setText("It's a push");
-			System.out.println("Push");
 		} else {
 			decision.setText("Dealer wins.");
-			System.out.println("DW");
 		}
-		
+
+		/*
+		 * Removing the image of the back of the card and inserting the image of the
+		 * dealer's second card.
+		 */
 		dealerBox.getChildren().clear();
-		for(int i = 0; i < dealerHand.cards.size(); i++) {
+		for (int i = 0; i < dealerHand.cards.size(); i++) {
 			dealerBox.getChildren().add(dealerHand.cards.get(i).getImg());
 		}
-		
+		// Enabling the play button to start a new hand
 		playButton.setDisable(false);
+
+		// Clearing dealer's and player's hand
 		for (int i = 0; i < dealerHand.cards.size(); i++) {
 			dealerHand.cards.clear();
 		}
 		for (int i = 0; i < playersHand.cards.size(); i++) {
 			playersHand.cards.clear();
 		}
+
+		// Console message to ensure decks are clear
 		System.out.println("Dealer after: " + dealerHand.getScore());
 		System.out.println("Player after: " + playersHand.getScore());
+
+		// Resetting variables to allow for play on next hand
 		bet = false;
 		pot = 0;
 
+		/*
+		 * Checks for user being out of credits, if true the player must restart with a
+		 * new deck to continue playing.
+		 */
 		if (stash == 0) {
 			decision.setText("You don't have any money left");
 			playButton.setDisable(true);
