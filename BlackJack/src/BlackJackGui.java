@@ -1,3 +1,4 @@
+
 // Justin Terry
 // Class (CECS 274-05)
 // Project Name (Prog 2 - Blackjack)
@@ -6,6 +7,8 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -13,6 +16,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -45,7 +49,7 @@ public class BlackJackGui extends Application {
 	private Button betFive = new Button("Bet 5");
 	private Button betTen = new Button("Bet 10");
 	private Button betTwentyFive = new Button("Bet 25");
-	private Button dealButton = new Button("Deal");
+	private Button dealButton = new Button("Bet");
 	private Label message = new Label();
 	private HBox playerBox = new HBox();
 	private HBox messageBox = new HBox();
@@ -53,7 +57,7 @@ public class BlackJackGui extends Application {
 	private Hand dealerHand = new Hand();
 	private Hand playersHand = new Hand();
 	private Label decision = new Label();
-	private boolean bet = false;
+	private TextField betAmount = new TextField();
 	private int stash = 200;
 	private int pot = 0;
 	private Card back;
@@ -130,12 +134,11 @@ public class BlackJackGui extends Application {
 				 * These numbers are then used to assign value and and image to the card in its
 				 * constructor.
 				 */
-				int counter = 2;
-				while (counter < 15) {
+
+				for (int j = 2; j < 15; j++) {
 					for (int i = 0; i < 4; i++) {
-						theDeck.add(new Card(counter, i));
+						theDeck.add(new Card(j, i));
 					}
-					counter++;
 				}
 
 				// Disabling buttons and telling the user the deck has been created
@@ -188,36 +191,65 @@ public class BlackJackGui extends Application {
 				hitButton.setDisable(true);
 				stayButton.setPrefWidth(60);
 				stayButton.setDisable(true);
-				betFive.setPrefSize(60, 60);
+				betFive.setPrefSize(50, 50);
 				betFive.setDisable(false);
-				betTen.setPrefSize(60, 60);
+				betTen.setPrefSize(50, 50);
 				betTen.setDisable(false);
-				betTwentyFive.setPrefSize(60, 60);
+				betTwentyFive.setPrefSize(50, 50);
 				betTwentyFive.setDisable(false);
-				dealButton.setDisable(false);
+				dealButton.setDisable(true);
+				betAmount.setMaxWidth(150);
+				betAmount.setPromptText("Enter amount, click bet.");
 
 				// Clear center and add all the play items
 
-				leftBar.getChildren().addAll(betFive, betTen, betTwentyFive, hitButton, stayButton, dealButton,
-						stashLabel, potLabel);
+				leftBar.getChildren().addAll(betFive, betTen, betTwentyFive, betAmount, dealButton, hitButton,
+						stayButton, stashLabel, potLabel);
 				leftBar.setSpacing(20);
 				leftBar.setAlignment(Pos.CENTER);
 
-				// Disable play button and deal cards
+				// Adds listener to betAmount field to enable the deal button
+				betAmount.textProperty().addListener(new ChangeListener<String>() {
+					@Override
+					public void changed(ObservableValue<? extends String> observable, String oldValue,
+							String newValue) {
+						dealButton.setDisable(false);
+					}
+				});
 
 				dealButton.setOnAction(new EventHandler<ActionEvent>() {
 
 					@Override
 					public void handle(ActionEvent arg0) {
-						// If the player has bet, then deal
-						if (bet) {
-							playButton.setDisable(true);
-							dealButton.setDisable(true);
-							deal();
-						} else {
-							// Catches if the player has not bet
-							message.setText("You must bet first");
+						int amount;
+						boolean isInt;
+
+						try {
+							amount = Integer.parseInt(betAmount.getText());
+							isInt = true;
+						} catch (NumberFormatException e) {
+							amount = 0;
+							isInt = false;
 						}
+
+						// If the player has bet, then deal
+						if (isInt) {
+							if (amount <= stash) {
+								bet(amount);
+								potLabel.setText("The pot: " + pot);
+								stashLabel.setText("You have " + stash + " credits");
+								playButton.setDisable(true);
+								dealButton.setDisable(true);
+								deal();
+							} else {
+								// Catches if the player has not bet
+								message.setText("You can't bet that much");
+							}
+						} else {
+							message.setText("Your bet is not valid, it must be an integer.");
+						}
+						betAmount.clear();
+						dealButton.setDisable(true);
 					}
 				});
 				// Bet Buttons
@@ -226,10 +258,12 @@ public class BlackJackGui extends Application {
 					@Override
 					public void handle(ActionEvent arg0) {
 						bet(5);
-						bet = true;
 						potLabel.setText("The pot: " + pot);
 						stashLabel.setText("You have " + stash + " credits");
-						message.setText("Click Deal to continue");
+						playButton.setDisable(true);
+						dealButton.setDisable(true);
+						deal();
+
 					}
 				});
 				betTen.setOnAction(new EventHandler<ActionEvent>() {
@@ -237,10 +271,12 @@ public class BlackJackGui extends Application {
 					@Override
 					public void handle(ActionEvent arg0) {
 						bet(10);
-						bet = true;
 						potLabel.setText("The pot: " + pot);
 						stashLabel.setText("You have " + stash + " credits");
 						message.setText("Click Deal to continue");
+						playButton.setDisable(true);
+						dealButton.setDisable(true);
+						deal();
 					}
 				});
 				betTwentyFive.setOnAction(new EventHandler<ActionEvent>() {
@@ -248,10 +284,11 @@ public class BlackJackGui extends Application {
 					@Override
 					public void handle(ActionEvent arg0) {
 						bet(25);
-						bet = true;
 						potLabel.setText("The pot: " + pot);
 						stashLabel.setText("You have " + stash + " credits");
-						message.setText("Click Deal to continue");
+						playButton.setDisable(true);
+						dealButton.setDisable(true);
+						deal();
 					}
 				});
 				// ---------------------------------End Bet Buttons
@@ -317,12 +354,12 @@ public class BlackJackGui extends Application {
 				flow.setVgap(3);
 				flow.setPrefWrapLength(550);
 				flow.setHgap(-50);
-				
+
 				// Preparing scene
 				center.getChildren().clear();
 				leftBar.getChildren().clear();
 				center.getChildren().add(flow);
-				
+
 				// Displays all the cards in the deck
 				for (int i = 0; i < theDeck.size(); i++) {
 					flow.getChildren().add(theDeck.get(i).getImg());
@@ -350,10 +387,11 @@ public class BlackJackGui extends Application {
 	}
 
 	public void deal() {
-		if (theDeck.size() >= 4) {
+		if (theDeck.size() >= 10) {
 
 			// Preparing scene for new layout
 			center.getChildren().clear();
+			messageBox.getChildren().clear();
 			decision.setText("");
 			message.setText("");
 			playButton.setDisable(true);
@@ -450,11 +488,9 @@ public class BlackJackGui extends Application {
 			stash = stash + pot;
 		} else if (playersHand.getScore() > 21) {
 			decision.setText("You busted, dealer wins.");
-		} else if (playersHand.getScore() > dealerHand.getScore()) {
+		} else if (playersHand.getScore() >= dealerHand.getScore()) {
 			decision.setText("You win!");
 			stash = stash + pot;
-		} else if (playersHand.getScore() == dealerHand.getScore()) {
-			decision.setText("It's a push");
 		} else {
 			decision.setText("Dealer wins.");
 		}
@@ -483,7 +519,6 @@ public class BlackJackGui extends Application {
 		System.out.println("Player after: " + playersHand.getScore());
 
 		// Resetting variables to allow for play on next hand
-		bet = false;
 		pot = 0;
 
 		/*
@@ -491,7 +526,7 @@ public class BlackJackGui extends Application {
 		 * new deck to continue playing.
 		 */
 		if (stash == 0) {
-			decision.setText("You don't have any money left");
+			decision.setText("You don't have any money left, please leave.");
 			playButton.setDisable(true);
 		}
 	}
